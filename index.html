@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FLUID-TRACK Multi-Pasien</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f8fa;color:#243746}
+header{background:linear-gradient(135deg,#17324d,#285d83);color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.logo{font-size:24px;font-weight:800}.sub{font-size:12px;opacity:.82;margin-top:4px}.header-right{text-align:right;font-size:12px}.header-nurse{font-size:14px;font-weight:bold;margin-top:4px}
+.layout{display:flex;min-height:calc(100vh - 76px)} aside{width:230px;background:#fff;border-right:1px solid #d9e3ea;padding:15px}
+nav button{width:100%;border:0;background:none;padding:12px;text-align:left;border-radius:8px;margin:3px 0;color:#536371;cursor:pointer;font-size:13px}
+nav button.active,nav button:hover{background:#eef5f9;color:#17324d;font-weight:bold}
+main{flex:1;padding:25px;max-width:1500px;margin:auto;width:100%}.page{display:none}.page.active{display:block}
+h1{margin:0 0 5px}h2,h3{color:#17324d}.desc{color:#6c7a86;font-size:14px;margin-bottom:20px}
+.panel,.card{background:#fff;border:1px solid #d9e3ea;border-radius:12px;padding:18px;box-shadow:0 2px 7px #1430470a}.panel{margin-bottom:16px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0}.card small{color:#6c7a86}.value{font-size:25px;font-weight:800;margin:7px 0}
+.green{color:#25855b}.orange{color:#d48722}.red{color:#c84b4b}.blue{color:#2f6f9f}
+.patientbar{background:#f1f6fa;padding:14px;border-radius:9px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.badge{background:#e6f4ec;color:#25855b;padding:6px 10px;border-radius:18px;font-size:11px;font-weight:bold;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1.4fr .8fr;gap:16px}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.field label{display:block;font-size:12px;color:#6c7a86;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #d9e3ea;border-radius:8px;background:#fff;font-family:Arial,sans-serif;font-size:13px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2f6f9f;box-shadow:0 0 0 2px #2f6f9f18}textarea{min-height:90px;resize:vertical}
+.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:bold;cursor:pointer;font-size:12px}.primary{background:#2f6f9f;color:white}.danger{background:#fbeaea;color:#c84b4b}.secondary{background:#edf3f7;color:#17324d}.warning{background:#fff4df;color:#a96a12}
+.actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.table-wrapper{width:100%;overflow-x:auto}.table{width:100%;border-collapse:collapse;font-size:12px}
+.table th,.table td{padding:10px 7px;border-bottom:1px solid #edf1f4;text-align:left;vertical-align:top}.table th{color:#6c7a86;background:#fafcfd}
+.status{padding:4px 8px;border-radius:12px;font-size:10px;background:#e7f5ed;color:#25855b;display:inline-block}.status.plan{background:#edf3f7;color:#2f6f9f}.status.delay{background:#fff1df;color:#b36b0c}
+.patient-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.patient-item{background:#fff;border:1px solid #d9e3ea;border-radius:10px;padding:14px;cursor:pointer;transition:.2s}.patient-item:hover{border-color:#2f6f9f;transform:translateY(-1px)}
+.muted{color:#6c7a86;font-size:12px}.info{background:#f4f8fb;border-left:4px solid #2f6f9f;padding:12px;font-size:12px;line-height:1.6}.warning-box{background:#fff8e8;border-left:4px solid #d48722;padding:12px;font-size:12px;line-height:1.6}
+.nurse-box{background:#eef6fb;border:1px solid #d4e5f0;border-radius:10px;padding:14px;margin-bottom:16px}.action-card{border:1px solid #dce7ed;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff}
+.action-title{font-weight:bold;color:#17324d;display:flex;justify-content:space-between;align-items:center;gap:10px}.action-meta{font-size:11px;color:#6c7a86;margin-top:5px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}.feature-card{border:1px solid #dce7ed;border-radius:10px;padding:15px;background:#fff}
+.feature-icon{font-size:25px;margin-bottom:8px}.feature-title{font-weight:bold;color:#17324d;margin-bottom:5px}.feature-text{color:#6c7a86;font-size:12px;line-height:1.5}
+.step{display:flex;gap:12px;margin:14px 0}.step-number{width:30px;height:30px;min-width:30px;border-radius:50%;background:#2f6f9f;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold}.step-content{font-size:13px;line-height:1.6}.step-content b{color:#17324d}
+.modal{display:none;position:fixed;inset:0;background:#10283d88;align-items:center;justify-content:center;padding:20px;z-index:100}.modal.show{display:flex}.modalbox{background:#fff;border-radius:12px;padding:22px;width:min(700px,100%);max-height:90vh;overflow:auto}.modalhead{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:none;font-size:22px;cursor:pointer}.empty{padding:25px;text-align:center;color:#6c7a86;font-size:13px}
+hr{border:0;border-top:1px solid #edf1f4;margin:18px 0}ul{padding-left:20px}li{margin-bottom:7px}
+@media(max-width:1000px){.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr 1fr}.feature-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){header{padding:15px}.logo{font-size:20px}.header-right{display:none}.layout{display:block}aside{width:100%;padding:8px}nav{display:flex;overflow-x:auto}nav button{min-width:120px;font-size:12px;text-align:center}main{padding:14px}.cards,.formgrid,.patient-list,.feature-grid{grid-template-columns:1fr}.patientbar{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div><div class="logo">FLUID-TRACK</div><div class="sub">Fluid Tracking and Nursing Balance Documentation • Multi-Pasien</div></div><div class="header-right"><div>👩‍⚕️ Perawat Aktif</div><div class="header-nurse" id="headerNurse">Belum diisi</div></div></header>
+<div class="layout">
+<aside><nav>
+<button class="active" onclick="go('dashboard',this)">🏠 Dashboard</button>
+<button onclick="go('patients',this)">👥 Daftar Pasien</button>
+<button onclick="go('input',this)">💧 Input Monitoring</button>
+<button onclick="go('actions',this)">🩺 Tindakan Perawat</button>
+<button onclick="go('history',this)">📋 Riwayat</button>
+<button onclick="go('about',this)">ℹ️ Tentang Sistem</button>
+</nav></aside>
+<main>
+<section id="dashboard" class="page active">
+<h1>Dashboard Monitoring</h1><p class="desc">Halaman utama untuk melihat kondisi keseimbangan cairan pasien secara ringkas.</p>
+<div class="nurse-box"><div class="formgrid">
+<div class="field"><label>Nama Perawat</label><input id="dashNurse" type="text" placeholder="Masukkan nama perawat" oninput="changeNurse(this.value)"></div>
+<div class="field"><label>Shift</label><select id="shift"><option>Pagi</option><option>Siang</option><option>Malam</option></select></div>
+<div class="field"><label>Pasien Aktif</label><select id="selDash" onchange="pick(this.value)"></select></div>
+</div></div>
+<div class="patientbar"><div><b id="pname"></b><br><span id="pinfo" class="muted"></span><br><span class="muted">Perawat: <b id="patientNurse"></b></span></div><span class="badge">● Monitoring Aktif</span></div>
+<div class="cards">
+<div class="card"><small>Total Intake / 24 Jam</small><div class="value green" id="tin">0 mL</div></div>
+<div class="card"><small>Total Output / 24 Jam</small><div class="value orange" id="tout">0 mL</div></div>
+<div class="card"><small>Fluid Balance</small><div class="value" id="bal">0 mL</div></div>
+<div class="card"><small>Status</small><div class="value" id="stat" style="font-size:19px">NORMAL</div></div>
+</div>
+<div class="grid"><div class="panel"><h3>📊 Grafik Intake & Output</h3><canvas id="chart" height="125"></canvas></div><div class="panel"><h3>💧 Ringkasan Cairan</h3><div id="summary"></div><div class="info">📡 Data dapat dipresentasikan sebagai data sensor/IoT yang dikirim ke database.</div></div></div>
+</section>
+
+<section id="patients" class="page">
+<h1>Daftar Pasien</h1><p class="desc">Kelola data pasien yang sedang dimonitor.</p><button class="btn primary" onclick="openM()">＋ Tambah Pasien</button><div class="patient-list" id="plist" style="margin-top:15px"></div>
+</section>
+
+<section id="input" class="page">
+<h1>Input Monitoring</h1><p class="desc">Masukkan data cairan yang masuk dan keluar dari pasien.</p>
+<div class="panel"><div class="formgrid">
+<div class="field"><label>Pasien Aktif</label><select id="selInput" onchange="pick(this.value)"></select></div>
+<div class="field"><label>Nama Perawat</label><input id="inputNurse" type="text" placeholder="Masukkan nama perawat" oninput="changeNurse(this.value)"></div>
+<div class="field"><label>Waktu</label><input id="time" type="time"></div>
+</div></div>
+<div class="grid">
+<div class="panel"><h3>💧 Intake Cairan</h3><div class="formgrid"><div class="field"><label>Jenis</label><select id="itype"><option>Minuman oral</option><option>Infus / IV Fluid</option><option>Makanan cair</option><option>Lainnya</option></select></div><div class="field"><label>Jumlah (mL)</label><input id="ival" type="number" min="1" placeholder="Contoh: 250"></div></div><button class="btn primary" onclick="save('intake')" style="margin-top:12px">＋ Simpan Intake</button></div>
+<div class="panel"><h3>🚽 Output Cairan</h3><div class="formgrid"><div class="field"><label>Jenis</label><select id="otype"><option>Urine</option><option>Muntah</option><option>Drainase</option><option>Lainnya</option></select></div><div class="field"><label>Jumlah (mL)</label><input id="oval" type="number" min="1" placeholder="Contoh: 300"></div></div><button class="btn primary" onclick="save('output')" style="margin-top:12px">＋ Simpan Output</button></div>
+</div><div class="info"><b>Alur data:</b> Input manual / sensor → IoT Gateway → Database → FLUID-TRACK → Dashboard Perawat</div>
+</section>
+
+<section id="actions" class="page">
+<h1>Tindakan Perawat</h1><p class="desc">Dokumentasikan tindakan keperawatan yang dilakukan pada pasien aktif.</p>
+<div class="panel"><div class="formgrid">
+<div class="field"><label>Pasien Aktif</label><select id="selActionPatient" onchange="pick(this.value)"></select></div>
+<div class="field"><label>Nama Perawat</label><input id="actionNurse" type="text" placeholder="Masukkan nama perawat" oninput="changeNurse(this.value)"></div>
+<div class="field"><label>Waktu Tindakan</label><input id="actionTime" type="time"></div>
+</div></div>
+<div class="panel"><h3>＋ Tambahkan Tindakan</h3>
+<div class="formgrid"><div class="field"><label>Jenis Tindakan</label><select id="actionType" onchange="toggleOtherAction()">
+<option>Observasi status cairan</option><option>Pemeriksaan tanda vital</option><option>Monitoring intake-output</option><option>Pemeriksaan IV line</option><option>Pemeriksaan lokasi pemasangan infus</option><option>Monitoring kecepatan infus</option><option>Evaluasi keseimbangan cairan</option><option>Edukasi pasien tentang kebutuhan cairan</option><option>Kolaborasi dengan dokter</option><option>Pemberian terapi cairan</option><option>Penggantian cairan infus</option><option>Monitoring respon terapi</option><option>Dokumentasi keperawatan</option><option value="Lainnya">Lainnya</option>
+</select></div><div class="field"><label>Status Tindakan</label><select id="actionStatus"><option value="planned">Direncanakan</option><option value="done">Dilakukan</option><option value="delay">Ditunda</option></select></div></div>
+<div class="field" id="otherActionBox" style="display:none;margin-top:12px"><label>Tulis Jenis Tindakan Sendiri</label><input id="otherAction" type="text" placeholder="Contoh: Mengajarkan pembatasan cairan kepada pasien"></div>
+<div class="field" style="margin-top:12px"><label>Catatan / Hasil Tindakan</label><textarea id="actionNote" placeholder="Tuliskan hasil tindakan, respons pasien, atau catatan penting lainnya..."></textarea></div>
+<button class="btn primary" onclick="saveAction()" style="margin-top:12px">＋ Simpan Tindakan</button></div>
+<div class="panel"><h3>📋 Daftar Tindakan Pasien</h3><div id="actionList"></div></div>
+</section>
+
+<section id="history" class="page">
+<h1>Riwayat Monitoring</h1><p class="desc">Melihat seluruh riwayat pencatatan cairan dan tindakan keperawatan pasien.</p>
+<div class="panel"><div class="formgrid"><div class="field"><label>Pasien</label><select id="selHist" onchange="pick(this.value)"></select></div><div class="field"><label>Filter Nama Perawat</label><input id="histNurse" type="text" placeholder="Ketik nama perawat untuk filter" oninput="renderHistoryFilter()"></div></div></div>
+<div class="panel"><h3 id="htitle">Riwayat Pasien</h3><div class="table-wrapper"><table class="table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Kategori</th><th>Jumlah</th><th>Perawat</th><th>Sumber</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
+<div class="panel"><h3>🩺 Riwayat Tindakan Keperawatan</h3><div class="table-wrapper"><table class="table"><thead><tr><th>Waktu</th><th>Tindakan</th><th>Status</th><th>Catatan</th><th>Perawat</th></tr></thead><tbody id="actionHistory"></tbody></table></div></div>
+</section>
+
+<section id="about" class="page">
+<h1>Tentang Sistem</h1><p class="desc">Panduan penggunaan dan penjelasan fitur FLUID-TRACK.</p>
+<div class="panel"><h2>Apa itu FLUID-TRACK?</h2><p class="muted" style="line-height:1.7"><b>FLUID-TRACK</b> merupakan prototype sistem dokumentasi monitoring keseimbangan cairan pasien yang dirancang untuk membantu perawat mencatat, memantau, dan melihat kembali data intake, output, fluid balance, serta tindakan keperawatan secara terstruktur.</p><p class="muted" style="line-height:1.7">Sistem dirancang dengan konsep <b>multi-pasien</b>, sehingga data setiap pasien dipisahkan dan dapat dipantau melalui dashboard yang sama.</p></div>
+<div class="panel"><h2>Cara Menggunakan Sistem</h2>
+<div class="step"><div class="step-number">1</div><div class="step-content"><b>Masukkan nama perawat</b><br>Pada bagian Dashboard, masukkan nama perawat yang sedang menggunakan sistem.</div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><b>Pilih atau tambahkan pasien</b><br>Masuk ke menu <b>Daftar Pasien</b> dan klik <b>＋ Tambah Pasien</b>.</div></div>
+<div class="step"><div class="step-number">3</div><div class="step-content"><b>Pilih pasien aktif</b><br>Pilih pasien yang ingin dimonitor.</div></div>
+<div class="step"><div class="step-number">4</div><div class="step-content"><b>Masukkan data intake</b><br>Pilih jenis cairan, jumlah dalam mL, waktu, lalu simpan.</div></div>
+<div class="step"><div class="step-number">5</div><div class="step-content"><b>Masukkan data output</b><br>Pilih jenis output dan jumlah dalam mL lalu simpan.</div></div>
+<div class="step"><div class="step-number">6</div><div class="step-content"><b>Dokumentasikan tindakan perawat</b><br>Pilih tindakan, status, waktu, dan catatan hasil.</div></div>
+<div class="step"><div class="step-number">7</div><div class="step-content"><b>Periksa Dashboard</b><br>Dashboard menghitung total intake, total output, dan fluid balance.</div></div>
+<div class="step"><div class="step-number">8</div><div class="step-content"><b>Lihat Riwayat</b><br>Riwayat menampilkan pencatatan intake, output, tindakan, waktu, dan perawat.</div></div>
+</div>
+<div class="panel"><h2>Fitur</h2><div class="feature-grid">
+<div class="feature-card"><div class="feature-icon">🏠</div><div class="feature-title">Dashboard</div><div class="feature-text">Ringkasan total intake, output, balance, status, dan grafik.</div></div>
+<div class="feature-card"><div class="feature-icon">👥</div><div class="feature-title">Daftar Pasien</div><div class="feature-text">Menambah, memilih, dan mengelola pasien.</div></div>
+<div class="feature-card"><div class="feature-icon">💧</div><div class="feature-title">Input Intake</div><div class="feature-text">Mencatat cairan yang masuk.</div></div>
+<div class="feature-card"><div class="feature-icon">🚽</div><div class="feature-title">Input Output</div><div class="feature-text">Mencatat cairan yang keluar.</div></div>
+<div class="feature-card"><div class="feature-icon">⚖️</div><div class="feature-title">Fluid Balance</div><div class="feature-text">Menghitung intake dikurangi output.</div></div>
+<div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Grafik</div><div class="feature-text">Membandingkan intake dan output berdasarkan waktu.</div></div>
+<div class="feature-card"><div class="feature-icon">🩺</div><div class="feature-title">Tindakan Perawat</div><div class="feature-text">Mencatat tindakan, waktu, status, hasil, dan perawat.</div></div>
+<div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Riwayat</div><div class="feature-text">Menampilkan riwayat monitoring dan tindakan.</div></div>
+</div></div>
+<div class="panel"><h2>Perhitungan Fluid Balance</h2><div class="info"><b>Fluid Balance = Total Intake − Total Output</b><br><br>Contoh: Total Intake = 1.000 mL; Total Output = 750 mL; Fluid Balance = <b>+250 mL</b></div></div>
+<div class="panel"><h2>Catatan Prototype</h2><div class="warning-box">Versi ini merupakan prototype front-end. Data tersimpan selama halaman/browser digunakan dan belum terhubung ke server/database klinis.</div></div>
+</section>
+
+<div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><h2>Tambah Pasien</h2><button class="close" onclick="closeM()">×</button></div>
+<div class="formgrid">
+<div class="field"><label>Nama *</label><input id="nname" placeholder="Contoh: Ny. Siti Aminah"></div>
+<div class="field"><label>No. RM *</label><input id="nrm" placeholder="Contoh: RM 240093"></div>
+<div class="field"><label>Umur</label><input id="nage" type="number" placeholder="Contoh: 60"></div>
+<div class="field"><label>Jenis Kelamin</label><select id="ngender"><option>Perempuan</option><option>Laki-laki</option></select></div>
+<div class="field"><label>Ruangan</label><input id="nroom" placeholder="Contoh: Melati"></div>
+<div class="field"><label>Bed</label><input id="nbed" placeholder="Contoh: 08"></div>
+<div class="field"><label>Perawat Penanggung Jawab</label><input id="nnurse" placeholder="Masukkan nama perawat"></div>
+</div>
+<div class="actions"><button class="btn primary" onclick="addP()">Simpan Pasien</button><button class="btn secondary" onclick="closeM()">Batal</button></div>
+</div></div>
+</main></div>
+
+<script>
+const defaultData=[
+{id:'p1',name:'Ny. Siti Aminah',rm:'RM 240091',age:62,gender:'Perempuan',room:'Melati',bed:'08',nurse:'Nadhine Uswatun Khasanah',e:[['08:00','intake','Minuman oral',250,'Manual','Nadhine Uswatun Khasanah'],['08:30','output','Urine',300,'Manual','Nadhine Uswatun Khasanah'],['09:00','intake','Infus / IV Fluid',500,'IoT','Nadhine Uswatun Khasanah'],['10:00','intake','Minuman oral',250,'Manual','Nadhine Uswatun Khasanah'],['11:00','output','Urine',400,'IoT','Nadhine Uswatun Khasanah']],actions:[{time:'09:30',type:'Pemeriksaan IV line',status:'done',note:'IV line paten dan tidak ditemukan tanda phlebitis.',nurse:'Nadhine Uswatun Khasanah'},{time:'10:30',type:'Monitoring intake-output',status:'done',note:'Keseimbangan cairan dipantau dan didokumentasikan.',nurse:'Nadhine Uswatun Khasanah'}]},
+{id:'p2',name:'Tn. Budi Santoso',rm:'RM 240092',age:55,gender:'Laki-laki',room:'Mawar',bed:'03',nurse:'',e:[['07:30','intake','Infus / IV Fluid',500,'IoT',''],['09:00','intake','Minuman oral',200,'Manual',''],['10:00','output','Urine',450,'IoT',''],['11:00','output','Drainase',150,'Manual','']],actions:[]}
+];
+let ps=JSON.parse(localStorage.getItem('fluidTrackPatients')||'null')||defaultData;
+let aid=localStorage.getItem('fluidTrackActive')||'p1';
+let ch,currentNurse=localStorage.getItem('fluidTrackNurse')||'Nadhine Uswatun Khasanah';
+const $=x=>document.getElementById(x),cur=()=>ps.find(p=>p.id===aid)||ps[0];
+const tot=p=>({i:p.e.filter(x=>x[1]==='intake').reduce((a,x)=>a+x[3],0),o:p.e.filter(x=>x[1]==='output').reduce((a,x)=>a+x[3],0)});
+function persist(){localStorage.setItem('fluidTrackPatients',JSON.stringify(ps));localStorage.setItem('fluidTrackActive',aid);localStorage.setItem('fluidTrackNurse',currentNurse)}
+function fill(){['selDash','selInput','selHist','selActionPatient'].forEach(id=>{$(id).innerHTML=ps.map(p=>`<option value="${p.id}">${p.name} • ${p.rm}</option>`).join('');$(id).value=aid;});}
+function changeNurse(name){currentNurse=name.trim();$('headerNurse').textContent=currentNurse||'Belum diisi';['dashNurse','inputNurse','actionNurse'].forEach(id=>$(id).value=currentNurse);persist();}
+function pick(id){if(ps.some(p=>p.id===id))aid=id;fill();render();}
+function go(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render();}
+function render(){let p=cur();if(!p)return;let t=tot(p),b=t.i-t.o;$('pname').textContent=p.name;$('pinfo').textContent=`${p.rm} • ${p.age} tahun • ${p.gender} • ${p.room} • Bed ${p.bed}`;$('patientNurse').textContent=p.nurse||'Belum diisi';$('tin').textContent=t.i.toLocaleString('id-ID')+' mL';$('tout').textContent=t.o.toLocaleString('id-ID')+' mL';$('bal').textContent=(b>=0?'+':'')+b.toLocaleString('id-ID')+' mL';$('bal').className='value '+(b>=0?'green':'red');$('stat').textContent=b>=0?'NORMAL':'PERLU PERHATIAN';$('stat').className='value '+(b>=0?'green':'red');$('summary').innerHTML=`<p>Intake: <b>${t.i.toLocaleString('id-ID')} mL</b></p><p>Output: <b>${t.o.toLocaleString('id-ID')} mL</b></p><p>Balance: <b class="${b>=0?'green':'red'}">${b>=0?'+':''}${b.toLocaleString('id-ID')} mL</b></p><p>Perawat: <b>${p.nurse||'Belum diisi'}</b></p><p>Jumlah tindakan: <b>${p.actions.length}</b></p>`;$('plist').innerHTML=ps.map(x=>{let z=tot(x),bb=z.i-z.o;return `<div class="patient-item" onclick="selectPatientCard('${x.id}')"><b>${x.name}</b><div class="muted">${x.rm} • ${x.age} tahun • ${x.room} • Bed ${x.bed}</div><p>Perawat: <b>${x.nurse||'Belum diisi'}</b></p><p>Balance: <b class="${bb>=0?'green':'red'}">${bb>=0?'+':''}${bb.toLocaleString('id-ID')} mL</b></p><button class="btn danger" onclick="event.stopPropagation();delP('${x.id}')">Hapus</button></div>`}).join('');$('htitle').textContent='Riwayat '+p.name;renderHistoryFilter();renderActions();renderActionHistory();draw(p);persist();}
+function selectPatientCard(id){aid=id;fill();render();go('dashboard',document.querySelector('nav button'))}
+function renderHistoryFilter(){let p=cur(),filter=$('histNurse').value.trim().toLowerCase(),data=p.e.filter(x=>!filter||(x[5]||'').toLowerCase().includes(filter));$('tbody').innerHTML=data.slice().reverse().map(x=>`<tr><td>${x[0]}</td><td>${x[1]==='intake'?'Intake':'Output'}</td><td>${x[2]}</td><td>${x[3].toLocaleString('id-ID')} mL</td><td>${x[5]||'-'}</td><td>${x[4]}</td></tr>`).join('')||`<tr><td colspan="6" class="empty">Tidak ada data yang sesuai.</td></tr>`;}
+function renderActions(){let p=cur();if(!p.actions.length){$('actionList').innerHTML='<div class="empty">Belum ada tindakan keperawatan yang tercatat.</div>';return}$('actionList').innerHTML=p.actions.slice().reverse().map((a,index)=>{let st=a.status==='done'?'Dilakukan':a.status==='delay'?'Ditunda':'Direncanakan',sc=a.status==='done'?'status':a.status==='delay'?'status delay':'status plan';return `<div class="action-card"><div class="action-title"><span>${a.type}</span><span class="${sc}">${st}</span></div><div class="action-meta">🕐 ${a.time} • 👩‍⚕️ ${a.nurse}</div><p class="muted">${a.note||'Tidak ada catatan tambahan.'}</p><button class="btn danger" onclick="deleteAction(${p.actions.length-1-index})">Hapus</button></div>`}).join('');}
+function renderActionHistory(){let p=cur();if(!p.actions.length){$('actionHistory').innerHTML='<tr><td colspan="5" class="empty">Belum ada riwayat tindakan.</td></tr>';return}$('actionHistory').innerHTML=p.actions.slice().reverse().map(a=>{let st=a.status==='done'?'Dilakukan':a.status==='delay'?'Ditunda':'Direncanakan',sc=a.status==='done'?'status':a.status==='delay'?'status delay':'status plan';return `<tr><td>${a.time}</td><td><b>${a.type}</b></td><td><span class="${sc}">${st}</span></td><td>${a.note||'-'}</td><td>${a.nurse||'-'}</td></tr>`}).join('');}
+function draw(p){let labs=[...new Set(p.e.map(x=>x[0]))].sort(),ii=labs.map(l=>p.e.filter(x=>x[0]===l&&x[1]==='intake').reduce((a,x)=>a+x[3],0)),oo=labs.map(l=>p.e.filter(x=>x[0]===l&&x[1]==='output').reduce((a,x)=>a+x[3],0));if(ch)ch.destroy();ch=new Chart($('chart'),{type:'line',data:{labels:labs,datasets:[{label:'Intake (mL)',data:ii,borderWidth:2,tension:.3},{label:'Output (mL)',data:oo,borderWidth:2,tension:.3}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}});}
+function save(type){let input=type==='intake'?'ival':'oval',v=parseInt($(input).value),nurse=currentNurse.trim();if(!v||v<=0)return alert('Masukkan jumlah cairan yang valid.');if(!nurse)return alert('Nama perawat wajib diisi terlebih dahulu.');let time=$('time').value||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});cur().e.push([time,type,$(type==='intake'?'itype':'otype').value,v,'IoT/Manual',nurse]);cur().nurse=nurse;$(input).value='';render();alert('Data berhasil disimpan.');}
+function toggleOtherAction(){let show=$('actionType').value==='Lainnya';$('otherActionBox').style.display=show?'block':'none';if(!show)$('otherAction').value='';}
+function saveAction(){let p=cur(),nurse=$('actionNurse').value.trim();if(!nurse)return alert('Nama perawat wajib diisi.');let selected=$('actionType').value,type=selected;if(selected==='Lainnya'){type=$('otherAction').value.trim();if(!type)return alert('Silakan tuliskan jenis tindakan.')}let time=$('actionTime').value||new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});p.actions.push({time,type,status:$('actionStatus').value,note:$('actionNote').value.trim(),nurse});p.nurse=nurse;currentNurse=nurse;changeNurse(nurse);$('actionNote').value='';$('otherAction').value='';$('actionType').value='Observasi status cairan';$('actionStatus').value='done';$('otherActionBox').style.display='none';render();alert('Tindakan berhasil dicatat.');}
+function deleteAction(index){if(confirm('Apakah tindakan ini akan dihapus?')){cur().actions.splice(index,1);render();}}
+function openM(){$('modal').classList.add('show')}function closeM(){$('modal').classList.remove('show')}
+function addP(){let n=$('nname').value.trim(),r=$('nrm').value.trim(),nurse=$('nnurse').value.trim();if(!n||!r)return alert('Nama dan No. RM wajib diisi.');if(ps.some(p=>p.rm.toLowerCase()===r.toLowerCase()))return alert('No. RM sudah digunakan.');let p={id:'p'+Date.now(),name:n,rm:r,age:+$('nage').value||0,gender:$('ngender').value,room:$('nroom').value||'-',bed:$('nbed').value||'-',nurse,e:[],actions:[]};ps.push(p);aid=p.id;['nname','nrm','nage','nroom','nbed','nnurse'].forEach(x=>$(x).value='');closeM();fill();if(nurse)changeNurse(nurse);render();go('dashboard',document.querySelector('nav button'));alert('Pasien baru berhasil ditambahkan.');}
+function delP(id){if(ps.length===1)return alert('Minimal satu pasien harus tersedia.');let p=ps.find(x=>x.id===id);if(!confirm('Hapus '+p.name+'?'))return;ps=ps.filter(x=>x.id!==id);if(aid===id)aid=ps[0].id;fill();render();}
+fill();changeNurse(currentNurse);render();
+</script>
+</body>
+</html>
